@@ -1,0 +1,546 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#f3faff">
+  <meta name="description" content="青空计划 · 一个清爽、温柔、会自动保存的个人任务看板。">
+  <title>青空计划 · 个人任务看板</title>
+  <script>
+    try {
+      const saved = JSON.parse(localStorage.getItem("aozora-board-v1") || "{}");
+      if (saved && saved.profile && saved.profile.theme === "dark") {
+        document.documentElement.dataset.theme = "dark";
+        document.querySelector('meta[name="theme-color"]').setAttribute("content", "#07111f");
+      }
+    } catch (error) {
+      /* Keep the light theme when local data cannot be read. */
+    }
+  </script>
+  <link rel="icon" href='data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 64 64%22><rect width=%2264%22 height=%2264%22 rx=%2218%22 fill=%22%230e1720%22/><text x=%2232%22 y=%2243%22 font-size=%2225%22 text-anchor=%22middle%22 fill=%22%23e7bf76%22 font-family=%22Georgia%22 font-style=%22italic%22>me</text></svg>'>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+  <!-- SVG 图标库 -->
+  <svg class="svg-library" aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg">
+    <symbol id="i-calendar" viewBox="0 0 24 24">
+      <rect x="3.5" y="5.5" width="17" height="15" rx="3"></rect>
+      <path d="M8 3.5v4M16 3.5v4M3.5 10h17"></path>
+      <path d="M8 14h2M14 14h2"></path>
+    </symbol>
+    <symbol id="i-chevron" viewBox="0 0 24 24">
+      <path d="m8 10 4 4 4-4"></path>
+    </symbol>
+    <symbol id="i-pencil" viewBox="0 0 24 24">
+      <path d="m15.5 5.5 3 3M4.5 19.5l.7-4.2L16.3 4.2a2.1 2.1 0 0 1 3 3L8.2 18.3l-3.7 1.2Z"></path>
+      <path d="m14.5 6.5 3 3"></path>
+    </symbol>
+    <symbol id="i-trash" viewBox="0 0 24 24">
+      <path d="M4.5 7h15M9 7V4.8A1.8 1.8 0 0 1 10.8 3h2.4A1.8 1.8 0 0 1 15 4.8V7M6.5 7l.8 12.2A1.8 1.8 0 0 0 9.1 21h5.8a1.8 1.8 0 0 0 1.8-1.8L17.5 7M10 11v6M14 11v6"></path>
+    </symbol>
+    <symbol id="i-plus" viewBox="0 0 24 24">
+      <path d="M12 5v14M5 12h14"></path>
+    </symbol>
+    <symbol id="i-close" viewBox="0 0 24 24">
+      <path d="m6 6 12 12M18 6 6 18"></path>
+    </symbol>
+    <symbol id="i-search" viewBox="0 0 24 24">
+      <circle cx="10.8" cy="10.8" r="6.3"></circle>
+      <path d="m15.6 15.6 4.2 4.2"></path>
+    </symbol>
+    <symbol id="i-tag" viewBox="0 0 24 24">
+      <path d="M4 5.2V11l8.6 8.6a1.8 1.8 0 0 0 2.5 0l4.5-4.5a1.8 1.8 0 0 0 0-2.5L11 4H5.2A1.2 1.2 0 0 0 4 5.2Z"></path>
+      <circle cx="8.2" cy="8.2" r="1.25"></circle>
+    </symbol>
+    <symbol id="i-arrow-right" viewBox="0 0 24 24">
+      <path d="M5 12h14M13 6l6 6-6 6"></path>
+    </symbol>
+    <symbol id="i-alert" viewBox="0 0 24 24">
+      <path d="M12 3.5 21 20H3L12 3.5Z"></path>
+      <path d="M12 9v5M12 17.2v.1"></path>
+    </symbol>
+    <symbol id="i-check" viewBox="0 0 24 24">
+      <path d="m5 12.5 4.3 4.3L19 7"></path>
+    </symbol>
+    <symbol id="i-star" viewBox="0 0 24 24">
+      <path d="m12 2.6 2.87 5.82 6.43.94-4.65 4.53 1.1 6.4L12 17.27l-5.75 3.02 1.1-6.4L2.7 9.36l6.43-.94L12 2.6Z"></path>
+    </symbol>
+    <symbol id="i-spark" viewBox="0 0 24 24">
+      <path d="M12 2c.8 5.2 4.8 9.2 10 10-5.2.8-9.2 4.8-10 10-.8-5.2-4.8-9.2-10-10 5.2-.8 9.2-4.8 10-10Z"></path>
+    </symbol>
+    <symbol id="i-sun" viewBox="0 0 24 24">
+      <circle cx="12" cy="12" r="3.5"></circle>
+      <path d="M12 2.5v2M12 19.5v2M2.5 12h2M19.5 12h2M5.3 5.3l1.4 1.4M17.3 17.3l1.4 1.4M18.7 5.3l-1.4 1.4M6.7 17.3l-1.4 1.4"></path>
+    </symbol>
+    <symbol id="i-moon" viewBox="0 0 24 24">
+      <path d="M20.3 15.6A8.5 8.5 0 0 1 8.4 3.7a8.5 8.5 0 1 0 11.9 11.9Z"></path>
+    </symbol>
+    <symbol id="i-camera" viewBox="0 0 24 24">
+      <path d="M4 8.6A2.6 2.6 0 0 1 6.6 6h1.9l1.2-2h4.6l1.2 2h1.9A2.6 2.6 0 0 1 20 8.6v7.8a2.6 2.6 0 0 1-2.6 2.6H6.6A2.6 2.6 0 0 1 4 16.4V8.6Z"></path>
+      <circle cx="12" cy="12.4" r="3.3"></circle>
+    </symbol>
+    <symbol id="i-todo" viewBox="0 0 24 24">
+      <circle cx="12" cy="12" r="7.5"></circle>
+      <path d="M12 8.3v4.4l2.7 1.5"></path>
+    </symbol>
+    <symbol id="i-doing" viewBox="0 0 24 24">
+      <path d="M5 8h9M5 12h14M5 16h7"></path>
+      <circle cx="18.2" cy="8" r="1.2" class="fill-current"></circle>
+    </symbol>
+    <symbol id="i-done" viewBox="0 0 24 24">
+      <circle cx="12" cy="12" r="7.5"></circle>
+      <path d="m8.3 12.2 2.5 2.5 4.9-5.2"></path>
+    </symbol>
+  </svg>
+
+  <div class="ambient" aria-hidden="true">
+    <span class="wash wash-a"></span>
+    <span class="wash wash-b"></span>
+    <span class="wash wash-c"></span>
+    <span class="dot-grid"></span>
+    <div class="star-field"></div>
+    <div class="meteor-field">
+      <span class="meteor meteor-a"></span>
+      <span class="meteor meteor-b"></span>
+      <span class="meteor meteor-c"></span>
+    </div>
+    <svg class="ambient-star star-a" viewBox="0 0 24 24"><use href="#i-spark"></use></svg>
+    <svg class="ambient-star star-b" viewBox="0 0 24 24"><use href="#i-spark"></use></svg>
+    <svg class="ambient-star star-c" viewBox="0 0 24 24"><use href="#i-spark"></use></svg>
+    <span class="orbit orbit-a"></span>
+    <span class="vertical-note">あおぞら ・ タスク ・ ひとつずつ</span>
+  </div>
+
+  <div class="app">
+
+    <header class="masthead">
+      <div class="identity">
+        <div class="identity-top">
+          <div class="avatar-wrap">
+            <button class="avatar" id="avatarButton" type="button" aria-label="更换头像，点击从本地选择图片" title="点击更换头像">
+              <span class="avatar-default" id="avatarDefault">me</span>
+              <img class="avatar-image" id="avatarImage" alt="" hidden>
+              <i class="avatar-star" aria-hidden="true">✦</i>
+              <span class="avatar-upload-badge" aria-hidden="true">
+                <svg viewBox="0 0 24 24"><use href="#i-camera"></use></svg>
+              </span>
+            </button>
+            <input class="avatar-input" id="avatarInput" type="file" accept="image/*" aria-label="选择新头像图片">
+          </div>
+
+          <div class="signature-block">
+            <span class="signature-head">
+              <span class="signature-label">MY MOTTO · 签名</span>
+              <button class="signature-edit" id="signatureEditBtn" type="button" aria-label="编辑个性签名" title="编辑个性签名">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><use href="#i-pencil"></use></svg>
+              </button>
+            </span>
+            <button class="signature-text signature-text-trigger" id="signatureText" type="button" aria-label="编辑个性签名" title="点击修改个性签名">今日は走りたくない。だからこそ、走る</button>
+            <span class="signature-translation" id="signatureTranslation">今天不想跑，所以才去跑</span>
+          </div>
+        </div>
+
+        <div class="identity-body">
+          <div class="name-zone">
+            <button class="name-display" id="nameDisplay" type="button" aria-label="修改你的名称">
+              <span class="name-text" id="nameText">同学</span>
+              <svg class="name-pencil" viewBox="0 0 24 24" aria-hidden="true"><use href="#i-pencil"></use></svg>
+            </button>
+            <form class="name-form" id="nameForm" hidden>
+              <label class="sr-only" for="nameInput">你的名称</label>
+              <input class="name-input" id="nameInput" name="name" type="text" maxlength="16" autocomplete="off" spellcheck="false" placeholder="怎么称呼你？">
+              <button class="name-save" type="submit">保存</button>
+              <button class="name-cancel" id="nameCancel" type="button" aria-label="取消修改名称">取消</button>
+            </form>
+          </div>
+        </div>
+      </div>
+
+      <div class="brand">
+        <span class="brand-kicker">AOZORA · TASK BOARD</span>
+        <h1>青空计划</h1>
+        <p class="brand-sub"><span class="brand-jp">今日のタスク</span></p>
+      </div>
+
+      <div class="toolbar">
+        <div class="toolbar-top">
+          <div class="date-search" id="dateSearch">
+            <button class="date-trigger" id="dateTrigger" type="button" aria-haspopup="dialog" aria-label="按日期检索任务">
+              <span class="calendar-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24"><use href="#i-calendar"></use></svg>
+              </span>
+              <span class="date-trigger-copy">
+                <span class="date-label">按日期检索</span>
+                <strong class="date-value" id="dateValue">今天</strong>
+              </span>
+              <svg class="date-chevron" viewBox="0 0 24 24" aria-hidden="true"><use href="#i-chevron"></use></svg>
+            </button>
+            <input class="date-native" id="datePicker" type="date" tabindex="-1" aria-hidden="true">
+          </div>
+          <button class="today-btn" id="todayBtn" type="button">
+            <span class="today-dot" aria-hidden="true"></span>今天
+          </button>
+        </div>
+
+        <div class="theme-tools" role="group" aria-label="页面主题">
+          <button class="theme-btn" id="themeLightBtn" type="button" aria-label="切换浅色模式" title="浅色模式" aria-pressed="true">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><use href="#i-sun"></use></svg>
+          </button>
+          <button class="theme-btn" id="themeDarkBtn" type="button" aria-label="切换深色模式" title="深色模式" aria-pressed="false">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><use href="#i-moon"></use></svg>
+          </button>
+          <button class="theme-btn theme-btn--skin" id="themeSkinBtn" type="button" aria-label="更换页面皮肤，功能开发中" title="页面皮肤 · 开发中">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><use href="#i-star"></use></svg>
+          </button>
+        </div>
+      </div>
+    </header>
+
+    <main>
+      <section class="board-head" aria-label="看板概览">
+        <div class="board-intro">
+          <div class="eyebrow">
+            <span class="eyebrow-line" aria-hidden="true"></span>
+            <span id="viewKicker">TODAY · 今日任务</span>
+          </div>
+          <h2 id="viewTitle">今天，也慢慢向前。</h2>
+          <p id="viewSubtitle">正在加载今天的任务…</p>
+        </div>
+
+        <div class="search-dock" role="search" aria-label="任务检索">
+          <div class="keyword-box">
+            <svg class="keyword-icon" viewBox="0 0 24 24" aria-hidden="true"><use href="#i-search"></use></svg>
+            <label class="sr-only" for="keywordInput">按关键词检索当前日期任务</label>
+            <input class="keyword-input" id="keywordInput" type="search" autocomplete="off" placeholder="搜索关键词" aria-controls="board">
+            <button class="keyword-clear" id="keywordClear" type="button" aria-label="清除关键词" title="清除关键词" hidden>
+              <svg viewBox="0 0 24 24" aria-hidden="true"><use href="#i-close"></use></svg>
+            </button>
+          </div>
+
+          <div class="tag-search" id="tagSearch">
+            <button class="tag-trigger" id="tagTrigger" type="button" aria-haspopup="listbox" aria-expanded="false" aria-controls="tagPopover">
+              <svg class="tag-icon" viewBox="0 0 24 24" aria-hidden="true"><use href="#i-tag"></use></svg>
+              <span class="tag-trigger-copy">
+                <span class="tag-label">标签检索</span>
+                <strong class="tag-value" id="tagValue">全部标签</strong>
+              </span>
+              <svg class="tag-chevron" viewBox="0 0 24 24" aria-hidden="true"><use href="#i-chevron"></use></svg>
+            </button>
+            <div class="tag-popover" id="tagPopover" hidden>
+              <div class="tag-popover-head">
+                <span>选择标签</span>
+                <button class="tag-popover-close" id="tagClose" type="button" aria-label="关闭标签筛选">
+                  <svg viewBox="0 0 24 24" aria-hidden="true"><use href="#i-close"></use></svg>
+                </button>
+              </div>
+              <div class="tag-options" id="tagOptions" role="listbox" aria-label="按标签筛选当天任务"></div>
+              <p class="tag-empty" id="tagEmpty" hidden>这一天还没有可用标签。</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="progress-panel" id="progressPanel">
+          <div class="progress-head">
+            <span id="progressLabel">当日完成度</span>
+            <div class="progress-numbers">
+              <strong id="progressPct">0%</strong>
+              <span id="progressDetail">0 / 0</span>
+            </div>
+          </div>
+          <div class="progress-track" id="progressTrack" role="progressbar" aria-label="当日任务完成度" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
+            <span class="progress-fill" id="progressFill"></span>
+          </div>
+          <p class="progress-note" id="progressNote">从一件小事开始，就很好。</p>
+        </div>
+
+        <button class="primary-btn" id="addTaskBtn" type="button" title="新建任务（快捷键 N）">
+          <span class="primary-plus" aria-hidden="true">＋</span>
+          <span>新建任务</span>
+        </button>
+      </section>
+
+      <div class="search-empty" id="searchEmpty" hidden>
+        <span class="search-empty-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24"><use href="#i-search"></use></svg>
+        </span>
+        <div class="search-empty-copy">
+          <strong>没有找到符合条件的任务</strong>
+          <p>试试更换关键词或标签，也可以切换到其他日期看看。</p>
+        </div>
+        <button class="search-empty-clear" id="clearSearchBtn" type="button">清除检索条件</button>
+      </div>
+
+      <section class="board" id="board" aria-label="个人任务看板">
+
+        <section class="column column--todo" data-status="todo" aria-labelledby="columnTitleTodo">
+          <div class="column-accent" aria-hidden="true"></div>
+          <header class="column-header">
+            <div class="column-heading">
+              <span class="column-badge" aria-hidden="true">
+                <svg viewBox="0 0 24 24"><use href="#i-todo"></use></svg>
+              </span>
+              <div class="column-titles">
+                <span class="column-kicker">TO DO · タスク</span>
+                <h2 id="columnTitleTodo">待做<span class="column-en">To do</span></h2>
+              </div>
+            </div>
+            <div class="column-tools">
+              <span class="column-count" id="countTodo" aria-label="0 项">00</span>
+              <button class="column-add" type="button" data-add-status="todo" aria-label="在待做区新增任务" title="新增待做任务">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><use href="#i-plus"></use></svg>
+              </button>
+            </div>
+          </header>
+          <p class="column-caption">先记下来，心就轻一点。</p>
+          <div class="task-list" id="listTodo" data-status="todo" role="list" aria-live="polite"></div>
+        </section>
+
+        <section class="column column--doing" data-status="doing" aria-labelledby="columnTitleDoing">
+          <div class="column-accent" aria-hidden="true"></div>
+          <header class="column-header">
+            <div class="column-heading">
+              <span class="column-badge" aria-hidden="true">
+                <svg viewBox="0 0 24 24"><use href="#i-doing"></use></svg>
+              </span>
+              <div class="column-titles">
+                <span class="column-kicker">IN PROGRESS · 進行中</span>
+                <h2 id="columnTitleDoing">进行中<span class="column-en">Doing</span></h2>
+              </div>
+            </div>
+            <div class="column-tools">
+              <span class="column-count" id="countDoing" aria-label="0 项">00</span>
+              <button class="column-add" type="button" data-add-status="doing" aria-label="在进行中区域新增任务" title="新增进行中任务">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><use href="#i-plus"></use></svg>
+              </button>
+            </div>
+          </header>
+          <p class="column-caption">专注一件事，就已经很好。</p>
+          <div class="task-list" id="listDoing" data-status="doing" role="list" aria-live="polite"></div>
+        </section>
+
+        <section class="column column--done" data-status="done" aria-labelledby="columnTitleDone">
+          <div class="column-accent" aria-hidden="true"></div>
+          <header class="column-header">
+            <div class="column-heading">
+              <span class="column-badge" aria-hidden="true">
+                <svg viewBox="0 0 24 24"><use href="#i-done"></use></svg>
+              </span>
+              <div class="column-titles">
+                <span class="column-kicker">DONE · <span class="done-emoji" aria-hidden="true">🎉</span></span>
+                <h2 id="columnTitleDone">已完成<span class="column-en">Done</span></h2>
+              </div>
+            </div>
+            <div class="column-tools">
+              <span class="column-count" id="countDone" aria-label="0 项">00</span>
+              <button class="column-add" type="button" data-add-status="done" aria-label="在已完成区域新增任务" title="新增已完成任务">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><use href="#i-plus"></use></svg>
+              </button>
+            </div>
+          </header>
+          <p class="column-caption">完成的事，会在这里发光。</p>
+          <div class="task-list" id="listDone" data-status="done" role="list" aria-live="polite"></div>
+        </section>
+
+      </section>
+
+      <footer class="page-foot">
+        <span><span class="foot-star" aria-hidden="true">✦</span> 数据只保存在这台设备的浏览器里</span>
+        <span class="foot-brand">AOZORA TASK BOARD · 2026</span>
+      </footer>
+    </main>
+  </div>
+
+  <dialog class="task-dialog" id="taskDialog" aria-labelledby="dialogHeading" aria-describedby="dialogDesc">
+    <div class="dialog-inner">
+      <div class="dialog-glow" aria-hidden="true"></div>
+      <header class="dialog-head">
+        <div>
+          <span class="dialog-kicker" id="dialogKicker">NEW TASK · 新建任务</span>
+          <h2 id="dialogHeading">记下一件想做的事</h2>
+          <p class="dialog-desc" id="dialogDesc">写下来的这一刻，事情就已经轻了一点。</p>
+        </div>
+        <button class="dialog-close" id="dialogClose" type="button" aria-label="关闭">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><use href="#i-close"></use></svg>
+        </button>
+      </header>
+
+      <form class="task-form" id="taskForm" novalidate>
+        <div class="field">
+          <label class="field-label" for="taskTitle">任务内容 <span class="required">*</span></label>
+          <input class="text-input task-title-input" id="taskTitle" name="title" type="text" maxlength="80" autocomplete="off" placeholder="例如：复习数学第三章" required>
+        </div>
+
+        <div class="field-row">
+          <div class="field">
+            <label class="field-label" for="taskDate">计划日期 <span class="field-hint">用于日期检索</span></label>
+            <input class="text-input date-input" id="taskDate" name="due" type="date" required>
+          </div>
+          <div class="field">
+            <span class="field-label">所在区域</span>
+            <div class="status-segment" role="radiogroup" aria-label="任务所在区域">
+              <label class="segment">
+                <input type="radio" name="status" value="todo" checked>
+                <span>待做</span>
+              </label>
+              <label class="segment">
+                <input type="radio" name="status" value="doing">
+                <span>进行中</span>
+              </label>
+              <label class="segment">
+                <input type="radio" name="status" value="done">
+                <span>已完成</span>
+              </label>
+            </div>
+          </div>
+        </div>
+
+        <div class="field">
+          <label class="field-label" for="taskNote">备注 <span class="field-hint">可选</span></label>
+          <textarea class="text-input note-input" id="taskNote" name="note" rows="2" maxlength="160" placeholder="补充一点细节，之后会更容易开始。"></textarea>
+        </div>
+
+        <div class="field">
+          <label class="field-label" for="taskTags">标签 <span class="field-hint">用逗号分隔，最多 5 个</span></label>
+          <input class="text-input tags-input" id="taskTags" name="tags" type="text" maxlength="80" autocomplete="off" placeholder="例如：学习，数学，复习">
+        </div>
+
+        <div class="level-section">
+          <button class="level-trigger" id="levelTrigger" type="button" aria-expanded="false" aria-controls="levelPanel">
+            <span class="level-trigger-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24"><use href="#i-star"></use></svg>
+            </span>
+            <span class="level-trigger-copy">
+              <span class="level-trigger-label">重要等级</span>
+              <strong id="levelSummary">未标记 · 普通任务</strong>
+            </span>
+            <span class="level-preview" id="levelPreview" aria-hidden="true"></span>
+            <svg class="level-chevron" viewBox="0 0 24 24" aria-hidden="true"><use href="#i-chevron"></use></svg>
+          </button>
+
+          <div class="level-panel" id="levelPanel" hidden>
+            <div class="level-panel-title">选择任务等级</div>
+            <label class="level-option">
+              <input type="radio" name="taskLevel" value="3">
+              <span class="level-option-inner">
+                <span class="level-stars stars-3" aria-hidden="true">
+                  <svg viewBox="0 0 24 24"><use href="#i-star"></use></svg>
+                  <svg viewBox="0 0 24 24"><use href="#i-star"></use></svg>
+                  <svg viewBox="0 0 24 24"><use href="#i-star"></use></svg>
+                </span>
+                <span class="level-option-copy">
+                  <strong>重要等级</strong>
+                  <small>三颗星 · 优先完成</small>
+                </span>
+                <span class="level-option-check" aria-hidden="true"><svg viewBox="0 0 24 24"><use href="#i-check"></use></svg></span>
+              </span>
+            </label>
+            <label class="level-option">
+              <input type="radio" name="taskLevel" value="2">
+              <span class="level-option-inner">
+                <span class="level-stars stars-2" aria-hidden="true">
+                  <svg viewBox="0 0 24 24"><use href="#i-star"></use></svg>
+                  <svg viewBox="0 0 24 24"><use href="#i-star"></use></svg>
+                </span>
+                <span class="level-option-copy">
+                  <strong>次要等级</strong>
+                  <small>两颗星 · 有空时处理</small>
+                </span>
+                <span class="level-option-check" aria-hidden="true"><svg viewBox="0 0 24 24"><use href="#i-check"></use></svg></span>
+              </span>
+            </label>
+            <label class="level-option">
+              <input type="radio" name="taskLevel" value="0" checked>
+              <span class="level-option-inner">
+                <span class="level-zero-mark" aria-hidden="true">—</span>
+                <span class="level-option-copy">
+                  <strong>不标记</strong>
+                  <small>普通任务，不显示星标</small>
+                </span>
+                <span class="level-option-check" aria-hidden="true"><svg viewBox="0 0 24 24"><use href="#i-check"></use></svg></span>
+              </span>
+            </label>
+          </div>
+        </div>
+
+        <div class="dialog-footer">
+          <p class="dialog-save-note"><span aria-hidden="true">✦</span> 自动保存在本机，刷新不会丢</p>
+          <div class="dialog-actions">
+            <button class="ghost-btn" id="dialogCancel" type="button">取消</button>
+            <button class="submit-btn" id="submitTaskBtn" type="submit">添加任务</button>
+          </div>
+        </div>
+      </form>
+    </div>
+  </dialog>
+
+  <dialog class="task-dialog signature-dialog" id="signatureDialog" aria-labelledby="signatureHeading" aria-describedby="signatureDescription">
+    <div class="dialog-inner">
+      <div class="dialog-glow" aria-hidden="true"></div>
+      <header class="dialog-head">
+        <div>
+          <span class="dialog-kicker">EDIT MOTTO · 个性签名</span>
+          <h2 id="signatureHeading">写下一句，属于你的话</h2>
+          <p class="dialog-desc" id="signatureDescription">它会出现在头像右侧，成为你每天看到的第一句话。</p>
+        </div>
+        <button class="dialog-close" id="signatureClose" type="button" aria-label="关闭">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><use href="#i-close"></use></svg>
+        </button>
+      </header>
+
+      <form class="task-form" id="signatureForm" novalidate>
+        <div class="field">
+          <label class="field-label" for="signatureInput">签名原文 <span class="required">*</span></label>
+          <textarea class="text-input signature-input" id="signatureInput" name="signature" rows="3" maxlength="90" placeholder="写一句每天想看到的句子。"></textarea>
+        </div>
+        <div class="field">
+          <label class="field-label" for="signatureCnInput">中文释义 <span class="field-hint">可选</span></label>
+          <input class="text-input" id="signatureCnInput" name="signatureCn" type="text" maxlength="60" autocomplete="off" placeholder="给这句话一个中文注解。">
+        </div>
+        <div class="dialog-footer">
+          <p class="dialog-save-note"><span aria-hidden="true">✦</span> 自动保存在本机，刷新不会丢</p>
+          <div class="dialog-actions">
+            <button class="ghost-btn" id="signatureCancel" type="button">取消</button>
+            <button class="submit-btn" id="signatureSave" type="submit">保存签名</button>
+          </div>
+        </div>
+      </form>
+    </div>
+  </dialog>
+
+  <dialog class="confirm-dialog" id="confirmDialog" aria-labelledby="confirmHeading" aria-describedby="confirmDescription">
+    <div class="confirm-inner">
+      <span class="confirm-kicker">DELETE · 删除任务</span>
+      <h2 id="confirmHeading">确定删除这项任务吗？</h2>
+      <p class="confirm-description" id="confirmDescription">删除后将无法恢复，请确认是否继续。</p>
+      <p class="confirm-task-title" id="confirmTaskTitle"></p>
+      <div class="confirm-actions">
+        <button class="ghost-btn" id="confirmCancel" type="button">取消</button>
+        <button class="danger-btn" id="confirmDelete" type="button">确认删除</button>
+      </div>
+    </div>
+  </dialog>
+
+  <dialog class="confirm-dialog duplicate-dialog" id="duplicateDialog" aria-labelledby="duplicateHeading" aria-describedby="duplicateDescription">
+    <div class="confirm-inner">
+      <span class="confirm-kicker">DUPLICATE · 重复任务</span>
+      <h2 id="duplicateHeading">新增失败：任务已存在</h2>
+      <p class="confirm-description" id="duplicateDescription">这一天已经有同名任务，仍要添加重复内容吗？</p>
+      <p class="confirm-task-title" id="duplicateTaskTitle"></p>
+      <div class="confirm-actions">
+        <button class="ghost-btn" id="duplicateCancel" type="button">取消</button>
+        <button class="submit-btn" id="duplicateConfirm" type="button">仍然添加</button>
+      </div>
+    </div>
+  </dialog>
+
+  <div class="toast" id="toast" role="status" aria-live="polite" aria-atomic="true">
+    <span class="toast-icon" id="toastIcon" aria-hidden="true">✦</span>
+    <span class="toast-message" id="toastMessage"></span>
+    <button class="toast-action" id="toastAction" type="button" hidden>撤销</button>
+    <span class="toast-life" aria-hidden="true"></span>
+  </div>
+
+  <script src="app.js" defer></script>
+</body>
+</html>
